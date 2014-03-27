@@ -1,13 +1,12 @@
 
-
-Acceleration Calibration (Not for Deltabots)
+Acceleration Calibration (Cartesian Bots)
 ============================================
 -Define machine parameters and incremental acceleration values that will be generated into gcode.
 
 -Watch the machine run through the generated gcode routine and take note of which acceleration iteration starts to negatively affect performance.
 
 
-Delta Radius Calibration (Deltabots only)
+Delta Radius Calibration (Deltabots)
 =========================================
 -Define tool head characteristics and build platform diameter to get 4 generated gcode files to aid in firmware calibration
 
