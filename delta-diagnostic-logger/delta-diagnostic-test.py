@@ -32,18 +32,19 @@ HOVER_HEIGHT = 5; #height above button to begin small movements(mm)
 ##Testing Preferences
 datapoints = 300; #sample size for each routine
 platform_temp = 125; #temp of platform for testing routine while heated (degC)
+SPEED = 2000; #mm/min travel speed
 
 ##Testing Routines
-3D_motion = True; #add routine that uses movements on all axes
-3D_motion_heated = True; #add routine that uses movements on all axes while platform is heated
+ThreeD_motion = True; #add routine that uses movements on all axes
+ThreeD_motion_heated = True; #add routine that uses movements on all axes while platform is heated
 Z_motion = True; #add routine that uses movements on cartesian z-axis only
 Z_motion_heated = True; #add routine that uses movements on cartesian z-axis only while platform is heated
 include_homing = False; #add homing operation between each button poking operation
 
 ##Logging Preferences
-port = serial.Serial('/dev/tty.usbmodem1411', 115200)
 log_filename = 'delta-diagnostic-test.txt';
-
+serial_port = '/dev/tty.usbmodem1411';
+baud_rate = 115200;
 
 
 ##########Script##########
@@ -51,13 +52,14 @@ log_filename = 'delta-diagnostic-test.txt';
 import serial
 import time
 
+port = serial.Serial(serial_port, baud_rate)
 time.sleep(3)
 
 port.write('G28\n')
 
 log=open(log_filename, 'a')  #append mode
 
-if 3D_motion = True:
+if ThreeD_motion == True:
 	for i in range(0, datapoints):
 		port.write('M33\n')
 
@@ -71,11 +73,56 @@ if 3D_motion = True:
 				log.flush()
 				finished = True
 			
-		if include_homing = True:
+		if include_homing == True:
 			port.write('G28\n')
 
+if Z_motion == True:
+	for i in range(0, datapoints):
+		port.write('G1 X' + str(ZTOWER_X) + ' Y' + str(ZTOWER_Y) + ' Z' + str(HOVER_HEIGHT) + ' F' + str(SPEED) + '\n')
+		port.write('M34\n')
 
-if 3D_motion_heated = True:
+		finished = False
+		while not finished:
+			response = port.readline()
+			print response,
+        
+			if response.startswith('XYZ'):
+				log.write(response[4:])
+				log.flush()
+				finished = True
+			
+	for i in range(0, datapoints):
+		port.write('G1 X' + str(XTOWER_X) + ' Y' + str(XTOWER_Y) + ' Z' + str(HOVER_HEIGHT) + ' F' + str(SPEED) + '\n')
+		port.write('M34\n')
+	
+		finished = False
+		while not finished:
+			response = port.readline()
+			print response,
+        
+			if response.startswith('XYZ'):
+				log.write(response[4:])
+				log.flush()
+				finished = True		
+
+	for i in range(0, datapoints):
+		port.write('G1 X' + str(YTOWER_X) + ' Y' + str(YTOWER_Y) + ' Z' + str(HOVER_HEIGHT) + ' F' + str(SPEED) + '\n')
+		port.write('M34\n')
+	
+		finished = False
+		while not finished:
+			response = port.readline()
+			print response,
+        
+			if response.startswith('XYZ'):
+				log.write(response[4:])
+				log.flush()
+				finished = True
+			
+			
+#######Heated Routines#############
+
+if ThreeD_motion_heated == True:
 	port.write('M190 S' + str(platform_temp) + '\n')	
 	for i in range(0, datapoints):
 		port.write('M33\n')
@@ -90,66 +137,13 @@ if 3D_motion_heated = True:
 				log.flush()
 				finished = True
 				
-		if include_homing = True:
+		if include_homing == True:
 			port.write('G28\n')	
 			
 	port.write('M190 S0\n')		
 
 
-if Z_motion = True:
-	for i in range(0, datapoints):
-		port.write('G1 X' + str(ZTOWER_X) + ' Y' + str(ZTOWER_Y) + ' Z' + str(HOVER_HEIGHT) + ' F' + str(SPEED) + '\n')
-		port.write('M34\n')
-
-		finished = False
-		while not finished:
-			response = port.readline()
-			print response,
-        
-			if response.startswith('XYZ'):
-				log.write(response[4:])
-				log.flush()
-				finished = True
-			
-		if include_homing = True:
-			port.write('G28\n')
-			
-	for i in range(0, datapoints):
-		port.write('G1 X' + str(XTOWER_X) + ' Y' + str(XTOWER_Y) + ' Z' + str(HOVER_HEIGHT) + ' F' + str(SPEED) + '\n')
-		port.write('M34\n')
-	
-		finished = False
-		while not finished:
-			response = port.readline()
-			print response,
-        
-			if response.startswith('XYZ'):
-				log.write(response[4:])
-				log.flush()
-				finished = True
-			
-		if include_homing = True:
-			port.write('G28\n')		
-
-	for i in range(0, datapoints):
-		port.write('G1 X' + str(YTOWER_X) + ' Y' + str(YTOWER_Y) + ' Z' + str(HOVER_HEIGHT) + ' F' + str(SPEED) + '\n')
-		port.write('M34\n')
-	
-		finished = False
-		while not finished:
-			response = port.readline()
-			print response,
-        
-			if response.startswith('XYZ'):
-				log.write(response[4:])
-				log.flush()
-				finished = True
-			
-		if include_homing = True:
-			port.write('G28\n')				
-			
-			
-if Z_motion_heated = True:
+if Z_motion_heated == True:
 	port.write('M190 S' + str(platform_temp) + '\n')	
 	for i in range(0, datapoints):
 		port.write('G1 X' + str(ZTOWER_X) + ' Y' + str(ZTOWER_Y) + ' Z' + str(HOVER_HEIGHT) + ' F' + str(SPEED) + '\n')
@@ -165,8 +159,6 @@ if Z_motion_heated = True:
 				log.flush()
 				finished = True
 			
-		if include_homing = True:
-			port.write('G28\n')
 	port.write('M190 S0\n')	
 	
 	port.write('M190 S' + str(platform_temp) + '\n')	
@@ -183,9 +175,7 @@ if Z_motion_heated = True:
 				log.write(response[4:])
 				log.flush()
 				finished = True
-			
-		if include_homing = True:
-			port.write('G28\n')
+
 	port.write('M190 S0\n')		
 
 	port.write('M190 S' + str(platform_temp) + '\n')	
@@ -202,12 +192,10 @@ if Z_motion_heated = True:
 				log.write(response[4:])
 				log.flush()
 				finished = True
-			
-		if include_homing = True:
-			port.write('G28\n')
+
 	port.write('M190 S0\n')	
 	
 port.write('G28\n')	
 				
-abc.close()
+log.close()
 port.close()
